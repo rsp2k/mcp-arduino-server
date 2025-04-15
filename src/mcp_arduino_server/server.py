@@ -1956,40 +1956,48 @@ async def getWirevizInstructions() -> str:
     """
     log.info("Retrieving wireviz instructions")
     instructions = """
-# Arduino Connection Diagram YAML Guidelines for WireViz
+Arduino Connection Diagram YAML Guidelines for WireViz
 
-Use these rules to create valid YAML files.
+Use these rules to create valid YAML files:
 
-1. CONNECTORS:
-   - List every component (Arduino, sensors, LEDs, resistors, power supplies).
-   - Detail pins using `pinlabels` in order.
-   - Annotate using `type` and `notes` as needed.
-   - For simple components (resistors, capacitors, non-LED diodes), use:
-     ```yaml
-     ComponentName:
-       style: simple
-       type: Resistor
-       category: ferrule
-       subtype: [resistance] Ω
-     ```
+1. CONNECTORS
+	•	List every component: Include Arduino, sensors, LEDs, resistors, and power supplies.
+	•	Detail pins: Use pinlabels to list pins in order.
+	•	Annotate: Define the type and add notes as needed.
+	•	Simple components: For resistors, capacitors, and non-LED diodes, use:
 
-2. CABLES:
-   - Define cable bundles with properties: `colors`, `category`, and display options (`show_name`, `show_wirecount`, `show_wirenumbers`).
+ComponentName:
+  style: simple
+  type: Resistor
+  category: ferrule
+  subtype: [resistance] Ω
 
-3. CONNECTIONS:
-   - Reference only components defined in the CONNECTORS section.
-   - Each connection set must list the same number of pins/wires.
-   - Group connections logically by component.
-   - Use numeral position numbers only (e.g., [1], [2-4]), avoiding pin names ("GND", "VCC") or digital labels like "D2".
-   - Use `-->` for direct connections with ferrules.
-   - Order connection sets by listing ferrule-based connections first, then non-ferrule connections; ensure the final connection in each set does not include a ferrule.
-   - Combine similar connections to simplify the YAML file.
 
-4. METADATA:
-   - Include keys: `description`, `author`, and `date`.
 
-Example:
-```yaml
+2. CABLES
+	•	Define cable bundles: Specify colors, category, and display options such as show_name, show_wirecount, and show_wirenumbers.
+
+3. CONNECTIONS
+	•	Reference only defined components: Every connection must use components from the CONNECTORS section.
+	•	Match pin counts: Each connection set must list the same number of pins/wires.
+	•	Group logically: Organize connections by component.
+	•	Use position numbers only: Use numerals (e.g., [1], [2-4]) rather than pin names like “GND” or “VCC”. (Do not confuse these with digital labels like “D2”.)
+	•	Ferrule notation: Use --> for direct connections with ferrules.
+	•	Order matters:
+	•	List ferrule-involved connections first.
+	•	Do not end any connection set containing a ferrule.
+	•	Follow with connections that have no ferrules.
+	•	Simplify: Combine similar connections when possible.
+
+4. METADATA
+	•	Include keys: description, author, and date.
+
+⸻
+
+Examples
+
+Example 1: Arduino with SSD1306 OLED Display and Push Buttons
+
 connectors:
   Arduino Uno:
     pinlabels: ["5V", "GND", "D2", "D3", "A4", "A5"]
@@ -2071,19 +2079,72 @@ metadata:
   author: "User"
   date: "2024-06-23"
 
-Color Codes:
-“WH”: white, “BN”: brown, “GN”: green, “YE”: yellow, “GY”: grey, “PK”: pink, “BU”: blue, “RD”: red, “BK”: black, “VT”: violet, “SR”: silver, “GD”: gold, “OG”: orange.
+Example 2: Ordering Connections
 
-Checklist:
-	1.	All components in CONNECTIONS must be defined in CONNECTORS.
+WRONG – Ending with a Ferrule:
+
+connections:
+ [...]
+  -
+    - MainBoard: [1, 2, 3]
+    - Sensor_Cable: [1-3]
+    - Sensor: [1-3]
+  - # WRONG ORDER - END WITH FERRULES
+    - MainBoard: [6]
+    - LED_Cable: [4]
+    - Resistor3.
+    - -->
+    - LED: [4]
+
+metadata:
+  description: [...]
+
+CORRECT – Ending with Non-Ferrule Connection:
+
+connections:
+ [...]
+  -
+    - MainBoard: [6]
+    - LED_Cable: [4]
+    - Resistor3.
+    - -->
+    - LED: [4]
+  - # CORRECT ORDER - END WITH SET WITHOUT FERRULES
+    - MainBoard: [1, 2, 3]
+    - Sensor_Cable: [1-3]
+    - Sensor: [1-3]
+
+Key Rule: The final connection in each set must not link to a ferrule.
+
+⸻
+
+Color Codes
+	•	“WH”: white
+	•	“BN”: brown
+	•	“GN”: green
+	•	“YE”: yellow
+	•	“GY”: grey
+	•	“PK”: pink
+	•	“BU”: blue
+	•	“RD”: red
+	•	“BK”: black
+	•	“VT”: violet
+	•	“SR”: silver
+	•	“GD”: gold
+	•	“OG”: orange
+
+⸻
+
+Checklist
+	1.	Every component in CONNECTIONS must be defined in CONNECTORS.
 	2.	Pin position numbers in CONNECTIONS must match the wire count.
-	3.	Use cables or the --> notation for all connections.
-	4.	No direct component-to-component connections; include cables or ferrules.
+	3.	All connections should use cables or the --> notation.
+	4.	Do not make direct component-to-component connections without cables or ferrules.
 	5.	List ferrule-dependent connections first.
 	6.	Combine similar connections for simplicity.
-	7.	Ensure the final connection does not include a ferrule or cable.
-	8.	Use only components defined in the circuit.
-	9.	Each connection set must reference the same number of wires.
+	7.	End connection sets with components that are not ferrules or cables.
+	8.	Use only components defined in the circuit; do not add new ones in CONNECTIONS.
+	9.	Every connection set must reference the same number of wires.
 
 """
     return instructions.strip()
