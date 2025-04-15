@@ -15,9 +15,39 @@ This server acts as a bridge between the Model Context Protocol (MCP) and the `a
     *   Writing the main `.ino` file automatically triggers compilation for validation.
     *   **Auto-Open**: Newly created `.ino` files are automatically opened in your default editor.
 *   **WireViz Circuit Diagrams**:
-    *   Generate circuit diagrams from WireViz YAML directly via the server.
-    *   **Auto-Open**: Generated `.png` diagrams are automatically opened in your default image viewer.
-    *   Get built-in WireViz YAML usage instructions.
+    *   **YAML Authoring Help:** Use the built-in `getWirevizInstructions` tool to fetch comprehensive guidelines and an example for creating valid WireViz YAML. The instructions cover how to define connectors (components), cables, connections, and required metadata, along with a checklist and color code reference.
+    *   **Diagram Generation:** Use the `generate_diagram_from_yaml` tool to generate a circuit diagram PNG from your YAML. You can specify a sketch directory for output, or let the tool create a timestamped folder. The PNG is returned as base64 and opened automatically in your image viewer.
+    *   **Typical Workflow:**
+        1. Call `getWirevizInstructions` to see the YAML structure and example.
+        2. Author your YAML to describe your Arduino circuit.
+        3. Call `generate_diagram_from_yaml` with your YAML to get a ready-to-use PNG wiring diagram.
+    *   **Error Handling:** The server validates YAML structure, manages output files, and provides clear error messages for invalid YAML, missing dependencies, or WireViz failures.
+    *   **Example YAML:** (see the output of `getWirevizInstructions` for a full template)
+
+        ```yaml
+        connectors:
+          Arduino Uno:
+            pinlabels: ["5V", "GND", "D2", "D3", "A4", "A5"]
+            notes: Main control board
+          SSD1306 OLED Display:
+            pinlabels: ["VCC", "GND", "SCL", "SDA"]
+            notes: Display module
+          # ... more components ...
+        cables:
+          W_SSD1306_OLED:
+            colors: [RD, BK, TQ, VT]
+            category: bundle
+        connections:
+          - # Example connection
+            - Arduino Uno: [3]
+            - W_SSD1306_OLED: [1]
+            - SSD1306 OLED Display: [1]
+        metadata:
+          description: "Wiring diagram for Arduino Uno with SSD1306 OLED Display and Push Buttons"
+          author: "User"
+          date: "2024-06-23"
+        ```
+
 *   **Code Verification**: Compile sketches using `verify_code` without uploading.
 *   **Uploading**: Compile and upload sketches to connected boards.
 *   **Library Management**:
@@ -110,8 +140,12 @@ Run the server using the installed command-line script within its environment:
 
 ### Using WireViz Tools
 
-- To generate a circuit diagram, use the WireViz tool and provide your YAML content. The resulting PNG will open automatically.
-- For YAML syntax help, use the built-in WireViz instructions tool.
+- **YAML Authoring Help:** Call `getWirevizInstructions()` to receive comprehensive guidelines, a checklist, and a ready-to-use example for authoring valid WireViz YAML for Arduino diagrams.
+- **Diagram Generation:** Call `generate_diagram_from_yaml(yaml_content: str, sketch_name: str = "", output_filename_base: str = "circuit")` to generate a PNG wiring diagram from your YAML. The tool validates your YAML, manages output files, returns a confirmation and the PNG image (base64), and opens it automatically in your image viewer.
+- **Workflow:**
+    1. Use `getWirevizInstructions` to learn the YAML format.
+    2. Write your YAML describing your circuit.
+    3. Use `generate_diagram_from_yaml` to create and view your diagram.
 
 ### Auto-Open Feature
 
@@ -140,6 +174,8 @@ The following tools are exposed via the MCP interface:
 *   `lib_search(library_name: str, limit: int = 15)`: Searches online and local platform libraries.
 *   `lib_install(library_name: str)`: Installs/updates a library from the index.
 *   `list_library_examples(library_name: str)`: Lists examples for an installed library.
+*   `getWirevizInstructions()`: Returns detailed YAML authoring instructions and a template for WireViz diagrams.
+*   `generate_diagram_from_yaml(yaml_content: str, sketch_name: str = "", output_filename_base: str = "circuit")`: Generates a PNG wiring diagram from YAML, returns image and confirmation, opens PNG automatically.
 
 Refer to the server script's docstrings (`src/mcp_arduino_server/server.py`) for detailed arguments, return values, and potential errors for each tool.
 
