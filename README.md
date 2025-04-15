@@ -157,18 +157,23 @@ The server will start and listen for connections from an MCP client via standard
 
 When configuring an MCP client (such as Claude Desktop) to launch this server, you must ensure the `command` in your JSON config points to the correct executable. **If you are using pyenv or a custom Python environment, specify the full path to the `mcp-arduino-server` binary where it was installed.**
 
-For example:
+For example, to ensure WireViz is always found regardless of PATH issues, you can set the `WIREVIZ_PATH` environment variable in your MCP client config if supported:
 
 ```json
 {
   "mcpServers": {
     "arduino": {
       "command": "/Users/<your-username>/.pyenv/versions/<your-python-version>/bin/mcp-arduino-server",
-      "args": []
+      "args": [],
+      "env": {
+        "WIREVIZ_PATH": "/Users/<your-username>/.pyenv/versions/<your-python-version>/bin/wireviz"
+      }
     }
   }
 }
 ```
+
+Replace `<your-username>` and `<your-python-version>` with your actual username and Python version. This ensures the MCP client launches the correct environment and always finds WireViz, even if your PATH is not set up for GUI apps.
 
 Replace `<your-username>` and `<your-python-version>` with your actual username and Python version as appropriate. This ensures the MCP client launches the correct environment and finds all dependencies.
 
