@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+build/
+dist/
+*.egg-info/
+
+# OS
+.DS_Store
+
+# Lock/Dependency files
+uv.lock
+
+# Ignore all server copies except server.py and __init__.py in src/mcp_arduino_server
+src/mcp_arduino_server/server copy*.py
+src/mcp_arduino_server/server_win.py
+
+# If you want to ignore all but server.py and __init__.py, you could use:
+# src/mcp_arduino_server/*
+# !src/mcp_arduino_server/server.py
+# !src/mcp_arduino_server/__init__.py
+# But this would also ignore subfolders and __pycache__, so the above is safer.

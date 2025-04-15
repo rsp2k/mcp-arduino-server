@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-arduino-server"
+version = "0.1.0" # Start with an initial version
+authors = [
+  { name="Your Name", email="your.email@example.com" },
+]
+description = "MCP Server for Arduino CLI providing sketch, board, library, and file management tools."
+readme = "README.md"
+requires-python = ">=3.10" # Based on Pathlib, f-strings, asyncio usage
+license = { file="LICENSE" } # Or use text = "MIT License", etc.
+keywords = ["mcp", "model context protocol", "arduino", "arduino-cli", "llm", "ai"]
+classifiers = [
+    "Development Status :: 3 - Alpha", # Or Beta/Production/Stable
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License", # Choose your license
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# Runtime dependencies
+dependencies = [
+    "mcp[cli]", # Specify a minimum MCP version if needed
+    "thefuzz[speedup]>=0.20.0", # Specify minimum thefuzz version
+    "wireviz", # Added WireViz dependency
+    # Add any other direct dependencies your script might implicitly use
+]
+
+# Optional: Define command-line scripts
+[project.scripts]
+mcp-arduino-server = "mcp_arduino_server.server:main"
+
+# Optional: Links for PyPI
+[project.urls]
+Homepage = "https://github.com/your-username/mcp-arduino-server" # Replace with your repo URL
+Repository = "https://github.com/your-username/mcp-arduino-server"
+# Bug Tracker = "https://github.com/your-username/mcp-arduino-server/issues"
