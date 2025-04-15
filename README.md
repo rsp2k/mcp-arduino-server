@@ -1,9 +1,18 @@
 # MCP Arduino Server (mcp-arduino-server)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) <!-- Assuming MIT based on pyproject.toml -->
-<!-- Add other badges like PyPI version if applicable -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://img.shields.io/pypi/v/mcp-arduino-server.svg)](https://pypi.org/project/mcp-arduino-server/)
 
 MCP Server for Arduino CLI providing sketch, board, library, and file management tools. Powered by FastMCP.
+
+## Quick Start
+
+Install from PyPI and run:
+
+```bash
+pip install mcp-arduino-server
+mcp-arduino-server
+```
 
 ## Overview
 
@@ -73,43 +82,30 @@ This server acts as a bridge between the Model Context Protocol (MCP) and the `a
 
 ## Installation
 
-1.  **Clone the repository (if applicable):**
-    ```bash
-    git clone <your-repo-url> # Replace <your-repo-url> with the actual URL
-    cd mcp-arduino-server
-    ```
-2.  **Set up Python 3.10+:** Ensure you have a Python version of 3.10 or newer installed and active. Using `pyenv` is recommended:
-    ```bash
-    # Example using pyenv
-    pyenv install 3.11.6 # Or latest 3.10+
-    pyenv local 3.11.6  # Set for this project directory
-    ```
-3.  **Install dependencies using `uv` (Recommended) or `pip`:**
+Install via pip (recommended for most users):
 
-    *   **Using `uv`:**
-        ```bash
-        # Install uv if you haven't already (see uv documentation)
-        # Create a virtual environment
-        uv venv
-        # Install the project and dependencies
-        uv pip install .
-        ```
-    *   **Using `pip`:**
-        ```bash
-        # Create a virtual environment (optional but recommended)
-        python -m venv .venv
-        source .venv/bin/activate # Linux/macOS
-        # .\.venv\Scripts\activate # Windows
+```bash
+pip install mcp-arduino-server
+```
 
-        # Install the project and dependencies
-        pip install .
+For development or advanced usage, clone the repository and install dependencies:
 
-        # Or, if not cloning, install dependencies directly (less common):
-        # pip install "mcp[cli]" "thefuzz[speedup]>=0.20.0"
-        ```
-4.  **Ensure `arduino-cli` is installed and configured:**
-    *   Follow the official [arduino-cli installation guide](https://arduino.github.io/arduino-cli/latest/installation/).
-    *   You might need to install board cores (e.g., `arduino-cli core install arduino:avr`).
+```bash
+git clone https://github.com/Volt23/mcp-arduino-server.git
+cd mcp-arduino-server
+pip install .
+```
+
+**Set up Python 3.10+**: Ensure you have Python 3.10 or newer. Using `pyenv` is recommended:
+
+```bash
+pyenv install 3.11.6 # Or latest 3.10+
+pyenv local 3.11.6
+```
+
+**Ensure `arduino-cli` is installed and configured:**
+- Follow the official [arduino-cli installation guide](https://arduino.github.io/arduino-cli/latest/installation/).
+- You may need to install board cores (e.g., `arduino-cli core install arduino:avr`).
 
 ## Configuration
 
@@ -157,6 +153,25 @@ Run the server using the installed command-line script within its environment:
 
 The server will start and listen for connections from an MCP client via standard input/output (`stdio`).
 
+### Integrating with MCP Clients (e.g., Claude Desktop)
+
+When configuring an MCP client (such as Claude Desktop) to launch this server, you must ensure the `command` in your JSON config points to the correct executable. **If you are using pyenv or a custom Python environment, specify the full path to the `mcp-arduino-server` binary where it was installed.**
+
+For example:
+
+```json
+{
+  "mcpServers": {
+    "arduino": {
+      "command": "/Users/<your-username>/.pyenv/versions/<your-python-version>/bin/mcp-arduino-server",
+      "args": []
+    }
+  }
+}
+```
+
+Replace `<your-username>` and `<your-python-version>` with your actual username and Python version as appropriate. This ensures the MCP client launches the correct environment and finds all dependencies.
+
 ## Available Tools (MCP Interface)
 
 The following tools are exposed via the MCP interface:
@@ -189,4 +204,4 @@ Refer to the server script's docstrings (`src/mcp_arduino_server/server.py`) for
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details (assuming MIT license).
+This project is licensed under the MIT License.

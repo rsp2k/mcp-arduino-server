@@ -42,6 +42,6 @@ mcp-arduino-server = "mcp_arduino_server.server:main"
 
 # Optional: Links for PyPI
 [project.urls]
-Homepage = "https://github.com/your-username/mcp-arduino-server" # Replace with your repo URL
-Repository = "https://github.com/your-username/mcp-arduino-server"
-# Bug Tracker = "https://github.com/your-username/mcp-arduino-server/issues"
+Homepage = "https://github.com/Volt23/mcp-arduino-server" # Replace with your repo URL
+Repository = "https://github.com/Volt23/mcp-arduino-server"
+# Bug Tracker = "https://github.com/Volt23/mcp-arduino-server/issues"
