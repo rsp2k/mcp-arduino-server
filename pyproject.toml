@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "mcp-arduino-server"
 version = "0.1.4" # Start with an initial version
 authors = [
-  { name="Your Name", email="your.email@example.com" },
+  { name="Volt23", email="ernesto.volt@me.com" },
 ]
 description = "MCP Server for Arduino CLI providing sketch, board, library, and file management tools."
 readme = "README.md"
