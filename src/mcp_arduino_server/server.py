@@ -2086,7 +2086,7 @@ WRONG – Ending with a Ferrule:
 connections:
  [...]
   -
-    - MainBoard: [1, 2, 3]
+    - MainBoard: [1-3]
     - Sensor_Cable: [1-3]
     - Sensor: [1-3]
   - # WRONG ORDER - END WITH FERRULES
@@ -2110,7 +2110,7 @@ connections:
     - -->
     - LED: [4]
   - # CORRECT ORDER - END WITH SET WITHOUT FERRULES
-    - MainBoard: [1, 2, 3]
+    - MainBoard: [1-3]
     - Sensor_Cable: [1-3]
     - Sensor: [1-3]
 
