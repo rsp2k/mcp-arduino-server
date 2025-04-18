@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-arduino-server"
-version = "0.1.4" # Start with an initial version
+version = "0.1.5" # Start with an initial version
 authors = [
   { name="Volt23", email="ernesto.volt@me.com" },
 ]
@@ -33,6 +33,7 @@ dependencies = [
     "mcp[cli]", # Specify a minimum MCP version if needed
     "thefuzz[speedup]>=0.20.0", # Specify minimum thefuzz version
     "wireviz", # Added WireViz dependency
+    "openai", # For GPT-4.1 API calls
     # Add any other direct dependencies your script might implicitly use
 ]
 
