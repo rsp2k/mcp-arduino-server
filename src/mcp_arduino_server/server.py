@@ -78,6 +78,18 @@ import re
 import shutil  # Used for finding executable and file operations
 import subprocess
 import sys # Added for exit calls and platform detection
+import openai  # For GPT-4.1 API calls
+
+# --- OpenAI API Key Management ---
+_OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
+
+def set_openai_api_key(key: str):
+    global _OPENAI_API_KEY
+    _OPENAI_API_KEY = key
+    os.environ["OPENAI_API_KEY"] = key
+    log.info("OpenAI API key set.")
+    return "OpenAI API key set."
+
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import (Any, AsyncIterator, Dict, List, Optional, Set, Tuple,
@@ -1823,7 +1835,7 @@ async def write_file(filepath: str, content: str, board_fqbn: str = DEFAULT_FQBN
         raise Exception(error_msg) from e
 
 
-@mcp.tool()
+# @mcp.tool()
 async def rename_file(old_path: str, new_path: str) -> str:
     """
     Renames or moves a file or directory.
@@ -1889,7 +1901,7 @@ async def rename_file(old_path: str, new_path: str) -> str:
         raise Exception(error_msg) from e
 
 
-@mcp.tool()
+# @mcp.tool()
 async def remove_file(filepath: str) -> str:
     """
     Removes (deletes) a specified file.
@@ -1948,7 +1960,107 @@ async def remove_file(filepath: str) -> str:
 # @mcp.resource("wireviz://instructions")
 # async def get_wireviz_instructions_resource() -> str:
 
+async def set_openai_api_key_tool(api_key: str) -> str:
+    """
+    Sets the OpenAI API key for GPT-4.1 calls at runtime.
+    """
+    return set_openai_api_key(api_key)
+
 @mcp.tool()
+async def generate_circuit_diagram_from_description(
+    description: str,
+    sketch_name: str = "",
+    output_filename_base: str = "circuit"
+) -> List[Union[types.TextContent, types.ImageContent]]:
+    """
+    Generates a circuit diagram PNG from a natural language description of components and connections.
+    Uses OpenAI GPT-4.1 to convert the description and the WireViz guide into valid YAML, then generates the PNG.
+    Returns both the generated YAML and the PNG image.
+    """
+    if not description or not description.strip():
+        raise ValueError("Description cannot be empty.")
+    # Get OpenAI/OpenRouter API key (robust lookup)
+    api_key = _OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY") or os.environ.get("OPENROUTER_API_KEY")
+    if not api_key:
+        raise ValueError("OpenAI/OpenRouter API key is not set. Use set_openai_api_key_tool() or set the OPENAI_API_KEY or OPENROUTER_API_KEY environment variable.")
+
+    # Get the WireViz guide
+    wireviz_guide = await getWirevizInstructions()
+    prompt = (
+        "You are a WireViz YAML expert. Convert the following user description into a valid WireViz YAML file "
+        "suitable for generating a circuit diagram. Follow the provided guidelines and examples. "
+        "Return ONLY the YAML, and enclose it between triple backticks as a YAML code block, like this: ```yaml ... ``` (do not add any explanation or text outside the code block).\n\n" +
+        "WireViz YAML Guidelines:\n" + wireviz_guide + "\n\n" +
+        "User Description:\n" + description.strip()
+    )
+    # --- Provider detection and setup ---
+    from openai import OpenAI as OpenAIClient
+    import re
+    # Heuristic: OpenRouter keys usually start with 'sk-or-' or 'sk-proj-'; OpenAI with 'sk-...'
+    is_openrouter = api_key.startswith("sk-or-") or api_key.startswith("sk-proj-") or os.environ.get("OPENAI_PROVIDER", "").lower() == "openrouter"
+    if is_openrouter:
+        base_url = "https://openrouter.ai/api/v1"
+        model = "openai/gpt-4.1-2025-04-14"
+        # Optionally allow headers from env/config
+        extra_headers = {}
+        referer = os.environ.get("OPENROUTER_REFERER")
+        xtitle = os.environ.get("OPENROUTER_XTITLE")
+        if referer:
+            extra_headers["HTTP-Referer"] = referer
+        if xtitle:
+            extra_headers["X-Title"] = xtitle
+    else:
+        base_url = None
+        model = "gpt-4.1-2025-04-14"
+        extra_headers = None
+    client = OpenAIClient(api_key=api_key, base_url=base_url) if base_url else OpenAIClient(api_key=api_key)
+    # --- End Provider setup ---
+    try:
+        def do_completion():
+            kwargs = dict(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                max_tokens=1800,
+            )
+            if extra_headers:
+                kwargs["extra_headers"] = extra_headers
+            return client.chat.completions.create(**kwargs)
+        response = await asyncio.get_event_loop().run_in_executor(
+            None,
+            do_completion
+        )
+        llm_output = response.choices[0].message.content.strip()
+        # --- Robust YAML code block extraction ---
+        import re
+        code_block_pattern = re.compile(r"```(?:yaml)?\s*([\s\S]+?)\s*```", re.IGNORECASE)
+        match = code_block_pattern.search(llm_output)
+        if match:
+            yaml_content = match.group(1).strip()
+        else:
+            log.warning("No YAML code block found in LLM response. Using full response as YAML.")
+            yaml_content = llm_output
+    except Exception as e:
+        log.error(f"OpenAI GPT-4.1 call failed: {e}")
+        raise Exception(f"OpenAI GPT-4.1 call failed: {e}")
+    # Generate diagram from YAML
+    try:
+        result = await generate_diagram_from_yaml(
+            yaml_content=yaml_content,
+            sketch_name=sketch_name,
+            output_filename_base=output_filename_base
+        )
+        # Prepend the YAML content as a TextContent result
+        if isinstance(result, list):
+            yaml_msg = types.TextContent(type="text", text=f"Generated WireViz YAML:\n\n{yaml_content}")
+            return [yaml_msg] + result
+        else:
+            return result
+    except Exception as e:
+        log.error(f"Failed to generate diagram from YAML: {e}")
+        raise
+
+# @mcp.resource("wireviz://instructions")
 async def getWirevizInstructions() -> str:
     """
     Provides basic instructions and links on how to use WireViz YAML syntax
@@ -2149,7 +2261,6 @@ Checklist
 """
     return instructions.strip()
 
-@mcp.tool()
 async def generate_diagram_from_yaml(
     yaml_content: str,
     sketch_name: str = "",  # Changed: now a string with a default of empty string
