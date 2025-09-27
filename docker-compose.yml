@@ -1,0 +1,56 @@
+services:
+  mcp-arduino:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ${MODE:-development}
+      args:
+        ARDUINO_CLI_VERSION: ${ARDUINO_CLI_VERSION:-latest}
+    container_name: mcp-arduino-server
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - MCP_SKETCH_DIR=${MCP_SKETCH_DIR:-/home/mcp/Documents/Arduino_MCP_Sketches/}
+      - ARDUINO_CLI_PATH=${ARDUINO_CLI_PATH:-/usr/local/bin/arduino-cli}
+      - WIREVIZ_PATH=${WIREVIZ_PATH:-/usr/local/bin/wireviz}
+    volumes:
+      # Development volumes - hot reload source code
+      - ${MODE:+./src:/app/src}
+      - ${MODE:+./tests:/app/tests}
+      - ${MODE:+./scripts:/app/scripts}
+      # Persistent sketch storage
+      - arduino-sketches:/home/mcp/Documents/Arduino_MCP_Sketches
+      - arduino-config:/home/mcp/.arduino15
+      - arduino-libraries:/home/mcp/Documents/Arduino/libraries
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    networks:
+      - default
+      - caddy
+    labels:
+      # Caddy reverse proxy labels for HTTPS
+      caddy: ${CADDY_DOMAIN:-mcp-arduino.local}
+      caddy.reverse_proxy: "{{upstreams 8080}}"
+    restart: unless-stopped
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: rebuild
+          path: pyproject.toml
+
+volumes:
+  arduino-sketches:
+    name: ${COMPOSE_PROJECT_NAME}-sketches
+  arduino-config:
+    name: ${COMPOSE_PROJECT_NAME}-config
+  arduino-libraries:
+    name: ${COMPOSE_PROJECT_NAME}-libraries
+
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME}
+  caddy:
+    external: true

@@ -1,48 +1,84 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "mcp-arduino-server"
-version = "0.1.5" # Start with an initial version
+version = "2025.09.26"  # Date-based versioning as per your preference
 authors = [
   { name="Volt23", email="ernesto.volt@me.com" },
 ]
-description = "MCP Server for Arduino CLI providing sketch, board, library, and file management tools."
+description = "FastMCP-powered Arduino CLI server with WireViz integration for circuit diagrams"
 readme = "README.md"
-requires-python = ">=3.10" # Based on Pathlib, f-strings, asyncio usage
-license = { file="LICENSE" } # Or use text = "MIT License", etc.
-keywords = ["mcp", "model context protocol", "arduino", "arduino-cli", "llm", "ai"]
+requires-python = ">=3.10"
+license = { file="LICENSE" }
+keywords = ["mcp", "model context protocol", "arduino", "arduino-cli", "llm", "ai", "fastmcp", "wireviz"]
 classifiers = [
-    "Development Status :: 3 - Alpha", # Or Beta/Production/Stable
+    "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: MIT License", # Choose your license
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Embedded Systems",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
-# Runtime dependencies
 dependencies = [
-    "mcp[cli]", # Specify a minimum MCP version if needed
-    "thefuzz[speedup]>=0.20.0", # Specify minimum thefuzz version
-    "wireviz", # Added WireViz dependency
-    "openai", # For GPT-4.1 API calls
-    # Add any other direct dependencies your script might implicitly use
+    "fastmcp>=2.12.4",  # FastMCP includes MCP 1.15.0 and sampling support
+    "thefuzz[speedup]>=0.22.1",
+    "wireviz>=0.4.1",
+    "pyserial>=3.5",  # Serial communication support
+    "pyserial-asyncio>=0.6",  # Async serial support
 ]
 
-# Optional: Define command-line scripts
-[project.scripts]
-mcp-arduino-server = "mcp_arduino_server.server:main"
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.13.2",
+    "mypy>=1.5.0",
+    "watchdog>=3.0.0",  # For hot-reloading in dev
+]
 
-# Optional: Links for PyPI
+[project.scripts]
+mcp-arduino = "mcp_arduino_server.server_refactored:main"
+mcp-arduino-server = "mcp_arduino_server.server_refactored:main"
+mcp-arduino-legacy = "mcp_arduino_server.server:main"  # Keep old version available
+
 [project.urls]
-Homepage = "https://github.com/Volt23/mcp-arduino-server" # Replace with your repo URL
+Homepage = "https://github.com/Volt23/mcp-arduino-server"
 Repository = "https://github.com/Volt23/mcp-arduino-server"
-# Bug Tracker = "https://github.com/Volt23/mcp-arduino-server/issues"
+Issues = "https://github.com/Volt23/mcp-arduino-server/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_arduino_server"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I", "N", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
