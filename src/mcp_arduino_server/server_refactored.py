@@ -402,6 +402,18 @@ def create_server(config: ArduinoServerConfig | None = None) -> FastMCP:
 
 def main():
     """Main entry point for the server with MCP roots support"""
+    import sys
+
+    # Handle --version flag
+    if len(sys.argv) > 1 and sys.argv[1] in ("--version", "-V"):
+        try:
+            from importlib.metadata import version
+            package_version = version("mcp-arduino")
+        except Exception:
+            package_version = "2025.09.27.2"
+        print(f"mcp-arduino {package_version}")
+        sys.exit(0)
+
     config = ArduinoServerConfig()
 
     # Override from environment if set
