@@ -4,9 +4,9 @@
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PyPI version](https://img.shields.io/pypi/v/mcp-arduino-server.svg)](https://pypi.org/project/mcp-arduino-server/)
+[![PyPI version](https://img.shields.io/pypi/v/mcp-arduino.svg)](https://pypi.org/project/mcp-arduino/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tools: 60+](https://img.shields.io/badge/tools-60+-brightgreen.svg)](https://github.com/rsp2k/mcp-arduino-server)
+[![Tools: 60+](https://img.shields.io/badge/tools-60+-brightgreen.svg)](https://git.supported.systems/MCP/mcp-arduino)
 
 **The Arduino development server that speaks your language.**
 
@@ -22,10 +22,10 @@ This MCP server lets you develop Arduino projects through natural conversation w
 
 ```bash
 # Install and run
-uvx mcp-arduino-server
+uvx mcp-arduino
 
 # Add to Claude Desktop
-claude mcp add arduino "uvx mcp-arduino-server"
+claude mcp add arduino "uvx mcp-arduino"
 ```
 
 That's it. Now you can talk to your Arduino.
@@ -318,8 +318,8 @@ Check out [examples/](./examples/) for complete projects:
 We love contributions! Whether it's adding new templates, fixing bugs, or improving documentation.
 
 ```bash
-git clone https://github.com/rsp2k/mcp-arduino-server
-cd mcp-arduino-server
+git clone https://git.supported.systems/MCP/mcp-arduino
+cd mcp-arduino
 uv pip install -e ".[dev]"
 pytest tests/
 ```
@@ -341,11 +341,11 @@ MIT - Use it, modify it, share it!
 ### **Ready to start building?**
 
 ```bash
-uvx mcp-arduino-server
+uvx mcp-arduino
 ```
 
 **Talk to your Arduino. Build something awesome.**
 
-[Documentation](./docs/README.md) • [Report Issues](https://github.com/rsp2k/mcp-arduino-server/issues) • [Discord Community](#)
+[Documentation](./docs/README.md) • [Report Issues](https://git.supported.systems/MCP/mcp-arduino/issues) • [Discord Community](#)
 
 </div>

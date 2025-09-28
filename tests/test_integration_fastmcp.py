@@ -12,16 +12,15 @@ import asyncio
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
-from typing import Dict, Any
+from unittest.mock import patch
 
 import pytest
 from fastmcp import Client
 from fastmcp.client.transports import StreamableHttpTransport
 from fastmcp.utilities.tests import run_server_in_process
 
-from src.mcp_arduino_server.server_refactored import create_server
 from src.mcp_arduino_server.config import ArduinoServerConfig
+from src.mcp_arduino_server.server_refactored import create_server
 
 
 def create_test_server(host: str, port: int, transport: str = "http") -> None:

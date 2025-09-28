@@ -5,19 +5,13 @@ Provides serial communication with cursor-based data streaming
 
 import asyncio
 import os
-import uuid
-from datetime import datetime
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
-from enum import Enum
 
 from fastmcp import Context
-from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_tool, mcp_resource
-from pydantic import BaseModel, Field
+from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_resource, mcp_tool
+from pydantic import Field
 
-from .serial_manager import SerialConnectionManager, SerialConnection, ConnectionState
-from .circular_buffer import CircularSerialBuffer, SerialDataType, SerialDataEntry
-
+from .circular_buffer import CircularSerialBuffer, SerialDataType
+from .serial_manager import SerialConnectionManager
 
 # Use CircularSerialBuffer directly
 SerialDataBuffer = CircularSerialBuffer
@@ -37,7 +31,7 @@ class ArduinoSerial(MCPMixin):
         buffer_size = max(100, min(buffer_size, 1000000))  # Between 100 and 1M entries
 
         self.data_buffer = CircularSerialBuffer(max_size=buffer_size)
-        self.active_monitors: Dict[str, asyncio.Task] = {}
+        self.active_monitors: dict[str, asyncio.Task] = {}
         self._initialized = False
 
         # Log buffer configuration
@@ -202,10 +196,10 @@ class ArduinoSerial(MCPMixin):
     @mcp_tool(name="serial_read", description="Read serial data using cursor-based pagination")
     async def read(
         self,
-        cursor_id: Optional[str] = Field(None, description="Cursor ID for pagination"),
-        port: Optional[str] = Field(None, description="Filter by port"),
+        cursor_id: str | None = Field(None, description="Cursor ID for pagination"),
+        port: str | None = Field(None, description="Filter by port"),
         limit: int = Field(100, description="Maximum entries to return"),
-        type_filter: Optional[str] = Field(None, description="Filter by data type"),
+        type_filter: str | None = Field(None, description="Filter by data type"),
         create_cursor: bool = Field(False, description="Create new cursor if not provided"),
         start_from: str = Field("oldest", description="Where to start cursor: oldest, newest, next"),
         auto_recover: bool = Field(True, description="Auto-recover invalid cursors"),
@@ -274,7 +268,7 @@ class ArduinoSerial(MCPMixin):
     @mcp_tool(name="serial_clear_buffer", description="Clear serial data buffer")
     async def clear_buffer(
         self,
-        port: Optional[str] = Field(None, description="Clear specific port or all if None"),
+        port: str | None = Field(None, description="Clear specific port or all if None"),
         ctx: Context = None
     ) -> dict:
         """Clear serial data buffer"""

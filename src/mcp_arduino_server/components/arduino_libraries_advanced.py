@@ -4,12 +4,12 @@ Provides dependency checking, version management, and library operations
 """
 
 import json
+import logging
 import os
 import re
-from typing import List, Dict, Optional, Any
-from pathlib import Path
 import subprocess
-import logging
+from pathlib import Path
+from typing import Any
 
 from fastmcp import Context
 from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_tool
@@ -27,7 +27,7 @@ class ArduinoLibrariesAdvanced(MCPMixin):
         self.cli_path = config.arduino_cli_path
         self.sketch_dir = Path(config.sketch_dir).expanduser()
 
-    async def _run_arduino_cli(self, args: List[str], capture_output: bool = True) -> Dict[str, Any]:
+    async def _run_arduino_cli(self, args: list[str], capture_output: bool = True) -> dict[str, Any]:
         """Run Arduino CLI command and return result"""
         cmd = [self.cli_path] + args
 
@@ -81,10 +81,10 @@ class ArduinoLibrariesAdvanced(MCPMixin):
     async def check_dependencies(
         self,
         library_name: str = Field(..., description="Library name to check dependencies for"),
-        fqbn: Optional[str] = Field(None, description="Board FQBN to check compatibility"),
+        fqbn: str | None = Field(None, description="Board FQBN to check compatibility"),
         check_installed: bool = Field(True, description="Check if dependencies are installed"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Check library dependencies and identify missing libraries
 
@@ -180,10 +180,10 @@ class ArduinoLibrariesAdvanced(MCPMixin):
     async def download_library(
         self,
         library_name: str = Field(..., description="Library name to download"),
-        version: Optional[str] = Field(None, description="Specific version to download"),
-        download_dir: Optional[str] = Field(None, description="Directory to download to"),
+        version: str | None = Field(None, description="Specific version to download"),
+        download_dir: str | None = Field(None, description="Directory to download to"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Download library archives without installation"""
         args = ["lib", "download", library_name]
 
@@ -220,10 +220,10 @@ class ArduinoLibrariesAdvanced(MCPMixin):
         self,
         updatable: bool = Field(False, description="Show only updatable libraries"),
         all_versions: bool = Field(False, description="Show all available versions"),
-        fqbn: Optional[str] = Field(None, description="Filter by board compatibility"),
-        name_filter: Optional[str] = Field(None, description="Filter by library name pattern"),
+        fqbn: str | None = Field(None, description="Filter by board compatibility"),
+        name_filter: str | None = Field(None, description="Filter by library name pattern"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List installed libraries with detailed information"""
         args = ["lib", "list"]
 
@@ -298,9 +298,9 @@ class ArduinoLibrariesAdvanced(MCPMixin):
     )
     async def upgrade_libraries(
         self,
-        library_names: Optional[List[str]] = Field(None, description="Specific libraries to upgrade (None = all)"),
+        library_names: list[str] | None = Field(None, description="Specific libraries to upgrade (None = all)"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Upgrade one or more libraries to their latest versions"""
         args = ["lib", "upgrade"]
 
@@ -353,7 +353,7 @@ class ArduinoLibrariesAdvanced(MCPMixin):
     async def update_index(
         self,
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Update Arduino libraries and boards package index"""
         # Update libraries index
         lib_result = await self._run_arduino_cli(["lib", "update-index"])
@@ -379,7 +379,7 @@ class ArduinoLibrariesAdvanced(MCPMixin):
     async def check_outdated(
         self,
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Check for outdated libraries and cores"""
         result = await self._run_arduino_cli(["outdated"])
 
@@ -427,11 +427,11 @@ class ArduinoLibrariesAdvanced(MCPMixin):
     )
     async def list_examples(
         self,
-        library_name: Optional[str] = Field(None, description="Filter examples by library name"),
-        fqbn: Optional[str] = Field(None, description="Filter by board compatibility"),
+        library_name: str | None = Field(None, description="Filter examples by library name"),
+        fqbn: str | None = Field(None, description="Filter by board compatibility"),
         with_description: bool = Field(True, description="Include example descriptions"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List all examples from installed libraries"""
         args = ["lib", "examples"]
 
@@ -466,7 +466,7 @@ class ArduinoLibrariesAdvanced(MCPMixin):
                 try:
                     sketch_file = Path(example_info["sketch_path"])
                     if sketch_file.exists():
-                        with open(sketch_file, 'r') as f:
+                        with open(sketch_file) as f:
                             # Read first comment block as description
                             content = f.read(500)  # First 500 chars
                             if content.startswith("/*"):
@@ -504,11 +504,11 @@ class ArduinoLibrariesAdvanced(MCPMixin):
     )
     async def install_missing_dependencies(
         self,
-        library_name: Optional[str] = Field(None, description="Library to install dependencies for"),
-        sketch_name: Optional[str] = Field(None, description="Sketch to analyze and install dependencies for"),
+        library_name: str | None = Field(None, description="Library to install dependencies for"),
+        sketch_name: str | None = Field(None, description="Sketch to analyze and install dependencies for"),
         dry_run: bool = Field(False, description="Only show what would be installed"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Install all missing dependencies automatically"""
 
         to_install = []
@@ -524,7 +524,7 @@ class ArduinoLibrariesAdvanced(MCPMixin):
             sketch_path = self.sketch_dir / sketch_name / f"{sketch_name}.ino"
             if sketch_path.exists():
                 # Parse includes from sketch
-                with open(sketch_path, 'r') as f:
+                with open(sketch_path) as f:
                     content = f.read()
                     includes = re.findall(r'#include\s+[<"]([^>"]+)[>"]', content)
 

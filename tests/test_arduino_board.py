@@ -2,15 +2,12 @@
 Tests for ArduinoBoard component
 """
 import json
-from unittest.mock import Mock, AsyncMock, patch
 import subprocess
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from tests.conftest import (
-    assert_progress_reported,
-    assert_logged_info
-)
+from tests.conftest import assert_logged_info, assert_progress_reported
 
 
 class TestArduinoBoard:

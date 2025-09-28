@@ -5,9 +5,8 @@ Handles wraparound and cursor invalidation for long-running sessions
 
 import uuid
 from collections import deque
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 
 
@@ -38,7 +37,7 @@ class CursorState:
     cursor_id: str
     position: int  # Global index position
     created_at: str
-    last_read: Optional[str] = None
+    last_read: str | None = None
     reads_count: int = 0
     is_valid: bool = True  # False if cursor points to overwritten data
 
@@ -65,7 +64,7 @@ class CircularSerialBuffer:
         self.buffer = deque(maxlen=max_size)  # Efficient circular buffer
         self.global_index = 0  # Ever-incrementing index
         self.oldest_index = 0  # Index of oldest entry in buffer
-        self.cursors: Dict[str, CursorState] = {}
+        self.cursors: dict[str, CursorState] = {}
 
         # Statistics
         self.total_entries = 0
@@ -149,8 +148,8 @@ class CircularSerialBuffer:
         self,
         cursor_id: str,
         limit: int = 100,
-        port_filter: Optional[str] = None,
-        type_filter: Optional[SerialDataType] = None,
+        port_filter: str | None = None,
+        type_filter: SerialDataType | None = None,
         auto_recover: bool = True
     ) -> dict:
         """
@@ -262,7 +261,7 @@ class CircularSerialBuffer:
             return True
         return False
 
-    def get_cursor_info(self, cursor_id: str) -> Optional[dict]:
+    def get_cursor_info(self, cursor_id: str) -> dict | None:
         """Get information about a cursor"""
         if cursor_id not in self.cursors:
             return None
@@ -279,11 +278,11 @@ class CircularSerialBuffer:
             "entries_ahead": self.buffer[-1].index - cursor.position + 1 if self.buffer and cursor.is_valid else None
         }
 
-    def list_cursors(self) -> List[dict]:
+    def list_cursors(self) -> list[dict]:
         """List all active cursors"""
         return [self.get_cursor_info(cursor_id) for cursor_id in self.cursors]
 
-    def get_latest(self, port: Optional[str] = None, limit: int = 10) -> List[SerialDataEntry]:
+    def get_latest(self, port: str | None = None, limit: int = 10) -> list[SerialDataEntry]:
         """Get latest entries without cursor"""
         if not self.buffer:
             return []
@@ -295,7 +294,7 @@ class CircularSerialBuffer:
 
         return entries
 
-    def clear(self, port: Optional[str] = None):
+    def clear(self, port: str | None = None):
         """Clear buffer for a specific port or all"""
         if port:
             # Filter out entries for specified port

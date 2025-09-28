@@ -1,17 +1,11 @@
 """
 Tests for ArduinoSketch component
 """
-import json
-from pathlib import Path
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import patch
 
 import pytest
 
-from tests.conftest import (
-    create_sketch_directory,
-    assert_progress_reported,
-    assert_logged_info
-)
+from tests.conftest import create_sketch_directory
 
 
 class TestArduinoSketch:

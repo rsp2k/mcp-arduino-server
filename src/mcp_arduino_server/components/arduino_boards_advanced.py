@@ -4,11 +4,10 @@ Provides board details, discovery, and attachment features
 """
 
 import json
-import os
-from typing import List, Dict, Optional, Any
-from pathlib import Path
-import subprocess
 import logging
+import subprocess
+from pathlib import Path
+from typing import Any
 
 from fastmcp import Context
 from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_tool
@@ -26,7 +25,7 @@ class ArduinoBoardsAdvanced(MCPMixin):
         self.cli_path = config.arduino_cli_path
         self.sketch_dir = Path(config.sketch_dir).expanduser()
 
-    async def _run_arduino_cli(self, args: List[str], capture_output: bool = True) -> Dict[str, Any]:
+    async def _run_arduino_cli(self, args: list[str], capture_output: bool = True) -> dict[str, Any]:
         """Run Arduino CLI command and return result"""
         cmd = [self.cli_path] + args
 
@@ -80,7 +79,7 @@ class ArduinoBoardsAdvanced(MCPMixin):
         list_programmers: bool = Field(False, description="Include available programmers"),
         show_properties: bool = Field(True, description="Show all board properties"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get comprehensive details about a specific board"""
         args = ["board", "details", "--fqbn", fqbn]
 
@@ -154,10 +153,10 @@ class ArduinoBoardsAdvanced(MCPMixin):
     )
     async def list_all_boards(
         self,
-        search_filter: Optional[str] = Field(None, description="Filter boards by name or FQBN"),
+        search_filter: str | None = Field(None, description="Filter boards by name or FQBN"),
         show_hidden: bool = Field(False, description="Show hidden boards"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List all available boards from all installed platforms"""
         args = ["board", "listall"]
 
@@ -228,11 +227,11 @@ class ArduinoBoardsAdvanced(MCPMixin):
     async def attach_board(
         self,
         sketch_name: str = Field(..., description="Sketch name to attach board to"),
-        port: Optional[str] = Field(None, description="Port where board is connected"),
-        fqbn: Optional[str] = Field(None, description="Board FQBN"),
+        port: str | None = Field(None, description="Port where board is connected"),
+        fqbn: str | None = Field(None, description="Board FQBN"),
         discovery_timeout: int = Field(5, description="Discovery timeout in seconds"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Attach a board to a sketch for persistent association"""
         sketch_path = self.sketch_dir / sketch_name
 
@@ -259,7 +258,7 @@ class ArduinoBoardsAdvanced(MCPMixin):
             attached_info = {}
 
             if sketch_json_path.exists():
-                with open(sketch_json_path, 'r') as f:
+                with open(sketch_json_path) as f:
                     sketch_data = json.load(f)
                     attached_info = {
                         "cpu": sketch_data.get("cpu"),
@@ -284,7 +283,7 @@ class ArduinoBoardsAdvanced(MCPMixin):
         self,
         query: str = Field(..., description="Search query for boards"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Search for boards in the online package index"""
         args = ["board", "search", query]
 
@@ -334,7 +333,7 @@ class ArduinoBoardsAdvanced(MCPMixin):
         port: str = Field(..., description="Port to identify board on"),
         timeout: int = Field(10, description="Timeout in seconds"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Identify board connected to a specific port"""
         # Arduino CLI board list doesn't filter by port, it lists all ports
         # We'll get all boards and filter for the requested port

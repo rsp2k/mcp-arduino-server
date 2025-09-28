@@ -3,10 +3,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "mcp-arduino-server"
-version = "2025.09.26"  # Date-based versioning as per your preference
+name = "mcp-arduino"
+version = "2025.09.27.1"  # Date-based versioning as per your preference
 authors = [
-  { name="Volt23", email="ernesto.volt@me.com" },
+  { name="Ryan Malloy", email="ryan@supported.systems" },
 ]
 description = "FastMCP-powered Arduino CLI server with WireViz integration for circuit diagrams"
 readme = "README.md"
@@ -46,13 +46,11 @@ dev = [
 
 [project.scripts]
 mcp-arduino = "mcp_arduino_server.server_refactored:main"
-mcp-arduino-server = "mcp_arduino_server.server_refactored:main"
-mcp-arduino-legacy = "mcp_arduino_server.server:main"  # Keep old version available
 
 [project.urls]
-Homepage = "https://github.com/Volt23/mcp-arduino-server"
-Repository = "https://github.com/Volt23/mcp-arduino-server"
-Issues = "https://github.com/Volt23/mcp-arduino-server/issues"
+Homepage = "https://git.supported.systems/MCP/mcp-arduino"
+Repository = "https://git.supported.systems/MCP/mcp-arduino"
+Issues = "https://git.supported.systems/MCP/mcp-arduino/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcp_arduino_server"]

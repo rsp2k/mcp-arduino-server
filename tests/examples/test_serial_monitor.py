@@ -6,18 +6,19 @@ Tests connection, reading, and cursor-based pagination
 
 import asyncio
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from mcp_arduino_server.components.serial_monitor import (
-    SerialMonitorContext,
-    SerialListPortsTool,
-    SerialListPortsParams
-)
 from fastmcp import Context
+
+from mcp_arduino_server.components.serial_monitor import (
+    SerialListPortsParams,
+    SerialListPortsTool,
+    SerialMonitorContext,
+)
 
 
 async def test_serial_monitor():

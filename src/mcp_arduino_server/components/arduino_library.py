@@ -4,10 +4,10 @@ import json
 import logging
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 from fastmcp import Context
-from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_tool, mcp_resource
+from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_resource, mcp_tool
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field
 
@@ -71,7 +71,7 @@ class ArduinoLibrary(MCPMixin):
         ctx: Context | None,
         query: str,
         limit: int = 10
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Search for Arduino libraries online"""
 
         try:
@@ -157,8 +157,8 @@ class ArduinoLibrary(MCPMixin):
         self,
         ctx: Context | None,
         library_name: str,
-        version: Optional[str] = None
-    ) -> Dict[str, Any]:
+        version: str | None = None
+    ) -> dict[str, Any]:
         """Install an Arduino library"""
 
         try:
@@ -282,7 +282,7 @@ class ArduinoLibrary(MCPMixin):
         self,
         ctx: Context | None,
         library_name: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Uninstall an Arduino library"""
 
         try:
@@ -333,7 +333,7 @@ class ArduinoLibrary(MCPMixin):
         self,
         ctx: Context | None,
         library_name: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List examples from an installed Arduino library"""
 
         try:
@@ -401,7 +401,7 @@ class ArduinoLibrary(MCPMixin):
             log.exception(f"Failed to list library examples: {e}")
             return {"error": str(e)}
 
-    async def _get_installed_libraries(self) -> List[Dict[str, Any]]:
+    async def _get_installed_libraries(self) -> list[dict[str, Any]]:
         """Get list of installed libraries"""
         try:
             cmd = [

@@ -14,18 +14,16 @@ This test is intended to be run manually when testing the ESP32 installation
 functionality, as it requires internet connectivity and downloads large packages.
 """
 
-import asyncio
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock
 
 import pytest
 from fastmcp import Client
 from fastmcp.client.transports import StreamableHttpTransport
 from fastmcp.utilities.tests import run_server_in_process
 
-from src.mcp_arduino_server.server_refactored import create_server
 from src.mcp_arduino_server.config import ArduinoServerConfig
+from src.mcp_arduino_server.server_refactored import create_server
 
 
 def create_test_server(host: str, port: int, transport: str = "http") -> None:

@@ -4,13 +4,12 @@ Provides advanced compile options, build analysis, and cache management
 """
 
 import json
+import logging
 import os
 import shutil
-import re
-from typing import List, Dict, Optional, Any
-from pathlib import Path
 import subprocess
-import logging
+from pathlib import Path
+from typing import Any
 
 from fastmcp import Context
 from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_tool
@@ -29,7 +28,7 @@ class ArduinoCompileAdvanced(MCPMixin):
         self.sketch_dir = Path(config.sketch_dir).expanduser()
         self.build_cache_dir = Path.home() / ".arduino" / "build-cache"
 
-    async def _run_arduino_cli(self, args: List[str], capture_output: bool = True) -> Dict[str, Any]:
+    async def _run_arduino_cli(self, args: list[str], capture_output: bool = True) -> dict[str, Any]:
         """Run Arduino CLI command and return result"""
         cmd = [self.cli_path] + args
 
@@ -83,22 +82,22 @@ class ArduinoCompileAdvanced(MCPMixin):
     async def compile_advanced(
         self,
         sketch_name: str = Field(..., description="Name of the sketch to compile"),
-        fqbn: Optional[str] = Field(None, description="Board FQBN (auto-detect if not provided)"),
-        build_properties: Optional[Dict[str, str]] = Field(None, description="Custom build properties"),
-        build_cache_path: Optional[str] = Field(None, description="Custom build cache directory"),
-        build_path: Optional[str] = Field(None, description="Custom build output directory"),
+        fqbn: str | None = Field(None, description="Board FQBN (auto-detect if not provided)"),
+        build_properties: dict[str, str] | None = Field(None, description="Custom build properties"),
+        build_cache_path: str | None = Field(None, description="Custom build cache directory"),
+        build_path: str | None = Field(None, description="Custom build output directory"),
         export_binaries: bool = Field(False, description="Export compiled binaries to sketch folder"),
-        libraries: Optional[List[str]] = Field(None, description="Additional libraries to include"),
+        libraries: list[str] | None = Field(None, description="Additional libraries to include"),
         optimize_for_debug: bool = Field(False, description="Optimize for debugging"),
         preprocess_only: bool = Field(False, description="Only run preprocessor"),
         show_properties: bool = Field(False, description="Show all build properties"),
         verbose: bool = Field(False, description="Verbose output"),
         warnings: str = Field("default", description="Warning level: none, default, more, all"),
-        vid_pid: Optional[str] = Field(None, description="USB VID/PID for board detection"),
-        jobs: Optional[int] = Field(None, description="Number of parallel jobs"),
+        vid_pid: str | None = Field(None, description="USB VID/PID for board detection"),
+        jobs: int | None = Field(None, description="Number of parallel jobs"),
         clean: bool = Field(False, description="Clean build directory before compile"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compile Arduino sketch with advanced options
 
@@ -257,11 +256,11 @@ class ArduinoCompileAdvanced(MCPMixin):
     async def analyze_size(
         self,
         sketch_name: str = Field(..., description="Name of the sketch"),
-        fqbn: Optional[str] = Field(None, description="Board FQBN"),
-        build_path: Optional[str] = Field(None, description="Build directory path"),
+        fqbn: str | None = Field(None, description="Board FQBN"),
+        build_path: str | None = Field(None, description="Build directory path"),
         detailed: bool = Field(True, description="Show detailed section breakdown"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Analyze compiled sketch size and memory usage"""
 
         # First compile to ensure we have a binary
@@ -375,7 +374,7 @@ class ArduinoCompileAdvanced(MCPMixin):
         except FileNotFoundError:
             return {"success": False, "error": "Size analysis tool not found. Install avr-size or xtensa-esp32-elf-size"}
 
-    def _get_board_memory_limits(self, fqbn: Optional[str]) -> Dict[str, int]:
+    def _get_board_memory_limits(self, fqbn: str | None) -> dict[str, int]:
         """Get memory limits for common boards"""
         memory_map = {
             "arduino:avr:uno": {"flash": 32256, "ram": 2048},
@@ -408,7 +407,7 @@ class ArduinoCompileAdvanced(MCPMixin):
     async def clean_cache(
         self,
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Clean Arduino build cache to free disk space"""
         args = ["cache", "clean"]
 
@@ -441,9 +440,9 @@ class ArduinoCompileAdvanced(MCPMixin):
     async def show_build_properties(
         self,
         fqbn: str = Field(..., description="Board FQBN"),
-        sketch_name: Optional[str] = Field(None, description="Sketch to get properties for"),
+        sketch_name: str | None = Field(None, description="Sketch to get properties for"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Show all build properties used during compilation"""
 
         args = ["compile", "--fqbn", fqbn, "--show-properties"]
@@ -512,10 +511,10 @@ class ArduinoCompileAdvanced(MCPMixin):
     async def export_binary(
         self,
         sketch_name: str = Field(..., description="Name of the sketch"),
-        output_dir: Optional[str] = Field(None, description="Directory to export to (default: sketch folder)"),
-        fqbn: Optional[str] = Field(None, description="Board FQBN"),
+        output_dir: str | None = Field(None, description="Directory to export to (default: sketch folder)"),
+        fqbn: str | None = Field(None, description="Board FQBN"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Export compiled binary files (.hex, .bin, .elf)"""
 
         # Compile with export flag

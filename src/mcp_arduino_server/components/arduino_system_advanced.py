@@ -4,14 +4,12 @@ Provides config management, bootloader operations, and sketch utilities
 """
 
 import json
-import os
-import shutil
-import zipfile
-from typing import List, Dict, Optional, Any
-from pathlib import Path
-import subprocess
 import logging
-import yaml
+import os
+import subprocess
+import zipfile
+from pathlib import Path
+from typing import Any
 
 from fastmcp import Context
 from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_tool
@@ -30,7 +28,7 @@ class ArduinoSystemAdvanced(MCPMixin):
         self.sketch_dir = Path(config.sketch_dir).expanduser()
         self.config_file = Path.home() / ".arduino15" / "arduino-cli.yaml"
 
-    async def _run_arduino_cli(self, args: List[str], capture_output: bool = True) -> Dict[str, Any]:
+    async def _run_arduino_cli(self, args: list[str], capture_output: bool = True) -> dict[str, Any]:
         """Run Arduino CLI command and return result"""
         cmd = [self.cli_path] + args
 
@@ -73,9 +71,9 @@ class ArduinoSystemAdvanced(MCPMixin):
     async def config_init(
         self,
         overwrite: bool = Field(False, description="Overwrite existing configuration"),
-        additional_urls: Optional[List[str]] = Field(None, description="Additional board package URLs"),
+        additional_urls: list[str] | None = Field(None, description="Additional board package URLs"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Initialize Arduino CLI configuration with defaults"""
         args = ["config", "init"]
 
@@ -110,7 +108,7 @@ class ArduinoSystemAdvanced(MCPMixin):
         self,
         key: str = Field(..., description="Configuration key (e.g., 'board_manager.additional_urls')"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get a specific configuration value"""
         args = ["config", "get", key]
 
@@ -143,7 +141,7 @@ class ArduinoSystemAdvanced(MCPMixin):
         key: str = Field(..., description="Configuration key"),
         value: Any = Field(..., description="Configuration value"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Set a configuration value"""
         # Convert value to appropriate format
         if isinstance(value, list):
@@ -174,7 +172,7 @@ class ArduinoSystemAdvanced(MCPMixin):
     async def config_dump(
         self,
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get the complete Arduino CLI configuration"""
         args = ["config", "dump", "--json"]
 
@@ -217,7 +215,7 @@ class ArduinoSystemAdvanced(MCPMixin):
         verify: bool = Field(True, description="Verify after burning"),
         verbose: bool = Field(False, description="Verbose output"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Burn bootloader to a board
 
@@ -257,11 +255,11 @@ class ArduinoSystemAdvanced(MCPMixin):
     async def archive_sketch(
         self,
         sketch_name: str = Field(..., description="Name of the sketch to archive"),
-        output_path: Optional[str] = Field(None, description="Output path for archive"),
+        output_path: str | None = Field(None, description="Output path for archive"),
         include_libraries: bool = Field(False, description="Include used libraries"),
         include_build_artifacts: bool = Field(False, description="Include compiled binaries"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a ZIP archive of a sketch for easy sharing"""
         sketch_path = self.sketch_dir / sketch_name
 
@@ -325,10 +323,10 @@ class ArduinoSystemAdvanced(MCPMixin):
         self,
         sketch_name: str = Field(..., description="Name for the new sketch"),
         template: str = Field("default", description="Template type: default, blink, serial, wifi, sensor"),
-        board: Optional[str] = Field(None, description="Board FQBN to attach"),
-        metadata: Optional[Dict[str, str]] = Field(None, description="Sketch metadata"),
+        board: str | None = Field(None, description="Board FQBN to attach"),
+        metadata: dict[str, str] | None = Field(None, description="Sketch metadata"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a new sketch from predefined templates"""
 
         sketch_path = self.sketch_dir / sketch_name
@@ -500,9 +498,9 @@ void loop() {
         self,
         port: str = Field(..., description="Serial port to monitor"),
         baudrate: int = Field(115200, description="Baud rate"),
-        config: Optional[Dict[str, Any]] = Field(None, description="Monitor configuration"),
+        config: dict[str, Any] | None = Field(None, description="Monitor configuration"),
         ctx: Context = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Start Arduino CLI's built-in monitor with advanced features
 

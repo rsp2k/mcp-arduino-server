@@ -8,10 +8,10 @@ Now with automatic MCP roots detection!
 import logging
 import os
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Any
 
-from fastmcp import FastMCP, Context
-from .config import ArduinoServerConfig
+from fastmcp import Context, FastMCP
+
 from .components import (
     ArduinoBoard,
     ArduinoDebug,
@@ -19,11 +19,12 @@ from .components import (
     ArduinoSketch,
     WireViz,
 )
-from .components.arduino_serial import ArduinoSerial
-from .components.arduino_libraries_advanced import ArduinoLibrariesAdvanced
 from .components.arduino_boards_advanced import ArduinoBoardsAdvanced
 from .components.arduino_compile_advanced import ArduinoCompileAdvanced
+from .components.arduino_libraries_advanced import ArduinoLibrariesAdvanced
+from .components.arduino_serial import ArduinoSerial
 from .components.arduino_system_advanced import ArduinoSystemAdvanced
+from .config import ArduinoServerConfig
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -35,8 +36,8 @@ class RootsAwareConfig:
 
     def __init__(self, base_config: ArduinoServerConfig):
         self.base_config = base_config
-        self._roots: Optional[List[Dict[str, Any]]] = None
-        self._selected_root_path: Optional[Path] = None
+        self._roots: list[dict[str, Any]] | None = None
+        self._selected_root_path: Path | None = None
         self._initialized = False
 
     async def initialize_with_context(self, ctx: Context) -> bool:
@@ -64,7 +65,7 @@ class RootsAwareConfig:
         self._initialized = True
         return False
 
-    def _select_best_root(self) -> Optional[Path]:
+    def _select_best_root(self) -> Path | None:
         """Select the best root for Arduino sketches"""
         if not self._roots:
             return None
@@ -155,11 +156,11 @@ class RootsAwareConfig:
 
         # Show source of directory
         if os.getenv('MCP_SKETCH_DIR'):
-            info.append(f"  (from MCP_SKETCH_DIR env var)")
+            info.append("  (from MCP_SKETCH_DIR env var)")
         elif self._selected_root_path:
-            info.append(f"  (from MCP root)")
+            info.append("  (from MCP root)")
         else:
-            info.append(f"  (default)")
+            info.append("  (default)")
 
         return "\n".join(info)
 
@@ -168,7 +169,7 @@ class RootsAwareConfig:
         return getattr(self.base_config, name)
 
 
-def create_server(config: Optional[ArduinoServerConfig] = None) -> FastMCP:
+def create_server(config: ArduinoServerConfig | None = None) -> FastMCP:
     """
     Factory function to create a properly configured Arduino MCP server
     using the component pattern with automatic MCP roots detection.
@@ -185,7 +186,7 @@ def create_server(config: Optional[ArduinoServerConfig] = None) -> FastMCP:
     # Get package version for display
     try:
         from importlib.metadata import version
-        package_version = version("mcp-arduino-server")
+        package_version = version("mcp-arduino")
     except:
         package_version = "2025.09.26"
 
@@ -217,6 +218,24 @@ def create_server(config: Optional[ArduinoServerConfig] = None) -> FastMCP:
     # Initialize advanced components
     library_advanced = ArduinoLibrariesAdvanced(roots_config)
     board_advanced = ArduinoBoardsAdvanced(roots_config)
+
+    # Initialize debug component for client capability detection
+    try:
+        from .components.client_debug import ClientDebugInfo
+        client_debug = ClientDebugInfo(roots_config)
+        log.info("Client debug tool initialized")
+    except ImportError:
+        client_debug = None
+        log.info("Client debug tool not available")
+
+    # Initialize enhanced capabilities component
+    try:
+        from .components.client_capabilities import ClientCapabilitiesInfo
+        client_caps = ClientCapabilitiesInfo(roots_config)
+        log.info("Client capabilities tool initialized")
+    except ImportError:
+        client_caps = None
+        log.info("Client capabilities tool not available")
     compile_advanced = ArduinoCompileAdvanced(roots_config)
     system_advanced = ArduinoSystemAdvanced(roots_config)
 
@@ -234,9 +253,19 @@ def create_server(config: Optional[ArduinoServerConfig] = None) -> FastMCP:
     compile_advanced.register_all(mcp)  # Advanced compilation
     system_advanced.register_all(mcp)   # System management
 
+    # Register client debug component if available
+    if client_debug:
+        client_debug.register_all(mcp)
+        log.info("Client debug tools registered")
+
+    # Register client capabilities component if available
+    if client_caps:
+        client_caps.register_all(mcp)
+        log.info("Client capabilities tools registered")
+
     # Add tool to show current directory configuration
     @mcp.tool(name="arduino_show_directories")
-    async def show_directories(ctx: Context) -> Dict[str, Any]:
+    async def show_directories(ctx: Context) -> dict[str, Any]:
         """Show current directory configuration including MCP roots status"""
         await ensure_roots_initialized(ctx)
 
@@ -357,8 +386,8 @@ def create_server(config: Optional[ArduinoServerConfig] = None) -> FastMCP:
     log.info(f"🚀 Arduino Development Server v{package_version} initialized")
     log.info(f"📁 Sketch directory: {config.sketches_base_dir}")
     log.info(f"🔧 Arduino CLI: {config.arduino_cli_path}")
-    log.info(f"📚 Components loaded: Sketch, Library, Board, Debug, WireViz, Serial Monitor")
-    log.info(f"📡 Serial monitoring: Enabled with cursor-based streaming")
+    log.info("📚 Components loaded: Sketch, Library, Board, Debug, WireViz, Serial Monitor")
+    log.info("📡 Serial monitoring: Enabled with cursor-based streaming")
     log.info(f"🤖 Client sampling: {'Enabled' if roots_config.enable_client_sampling else 'Disabled'}")
     log.info("📁 MCP Roots: Will be auto-detected on first tool use")
 

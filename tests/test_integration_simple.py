@@ -5,14 +5,11 @@ These tests focus on verifying server architecture, component integration,
 and metadata consistency without requiring full MCP protocol simulation.
 """
 
-import tempfile
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
-from src.mcp_arduino_server.server_refactored import create_server
 from src.mcp_arduino_server.config import ArduinoServerConfig
+from src.mcp_arduino_server.server_refactored import create_server
 
 
 class TestServerArchitecture:
@@ -152,8 +149,11 @@ class TestServerArchitecture:
     def test_component_isolation(self, test_config):
         """Test that components can be created independently"""
         from src.mcp_arduino_server.components import (
-            ArduinoSketch, ArduinoLibrary, ArduinoBoard,
-            ArduinoDebug, WireViz
+            ArduinoBoard,
+            ArduinoDebug,
+            ArduinoLibrary,
+            ArduinoSketch,
+            WireViz,
         )
 
         # Each component should initialize without errors

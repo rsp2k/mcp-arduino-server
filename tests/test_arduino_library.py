@@ -1,17 +1,13 @@
 """
 Tests for ArduinoLibrary component
 """
-import json
-from pathlib import Path
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
 import asyncio
+import json
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from tests.conftest import (
-    assert_progress_reported,
-    assert_logged_info
-)
+from tests.conftest import assert_logged_info, assert_progress_reported
 
 
 class TestArduinoLibrary:

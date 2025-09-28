@@ -1,15 +1,13 @@
 """Arduino Debug component using PyArduinoDebug for GDB-like debugging"""
 import asyncio
-import json
 import logging
-import subprocess
 import shutil
-from pathlib import Path
-from typing import Dict, Any, Optional, List
 from enum import Enum
+from pathlib import Path
+from typing import Any
 
 from fastmcp import Context
-from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_tool, mcp_resource
+from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_resource, mcp_tool
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field
 
@@ -33,7 +31,7 @@ class DebugCommand(str, Enum):
 class BreakpointRequest(BaseModel):
     """Request model for setting breakpoints"""
     location: str = Field(..., description="Function name or line number (file:line)")
-    condition: Optional[str] = Field(None, description="Conditional expression for breakpoint")
+    condition: str | None = Field(None, description="Conditional expression for breakpoint")
     temporary: bool = Field(False, description="Whether breakpoint is temporary (deleted after hit)")
 
 
@@ -88,7 +86,7 @@ class ArduinoDebug(MCPMixin):
         port: str,
         board_fqbn: str = "",
         gdb_port: int = 4242
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Start a debugging session for an Arduino sketch
 
         Args:
@@ -246,9 +244,9 @@ class ArduinoDebug(MCPMixin):
         ctx: Context | None,
         session_id: str,
         location: str,
-        condition: Optional[str] = None,
+        condition: str | None = None,
         temporary: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Set a breakpoint in the debugging session
 
         Args:
@@ -329,7 +327,7 @@ class ArduinoDebug(MCPMixin):
         auto_watch: bool = True,
         auto_mode: bool = False,
         auto_strategy: str = "continue"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Interactive debugging with optional user elicitation at breakpoints
 
         USAGE GUIDANCE FOR AI MODELS:
@@ -551,7 +549,7 @@ class ArduinoDebug(MCPMixin):
         ctx: Context | None,
         session_id: str,
         command: str = "continue"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run or continue execution in debug session
 
         Args:
@@ -626,7 +624,7 @@ class ArduinoDebug(MCPMixin):
         ctx: Context | None,
         session_id: str,
         expression: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Print variable value or evaluate expression
 
         Args:
@@ -679,7 +677,7 @@ class ArduinoDebug(MCPMixin):
         ctx: Context | None,
         session_id: str,
         full: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Show call stack backtrace
 
         Args:
@@ -730,7 +728,7 @@ class ArduinoDebug(MCPMixin):
         self,
         ctx: Context | None,
         session_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List all breakpoints with their status
 
         Args:
@@ -809,9 +807,9 @@ class ArduinoDebug(MCPMixin):
         self,
         ctx: Context | None,
         session_id: str,
-        breakpoint_id: Optional[str] = None,
+        breakpoint_id: str | None = None,
         delete_all: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Delete one or all breakpoints
 
         Args:
@@ -877,7 +875,7 @@ class ArduinoDebug(MCPMixin):
         session_id: str,
         breakpoint_id: str,
         enable: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Enable or disable a breakpoint
 
         Args:
@@ -930,7 +928,7 @@ class ArduinoDebug(MCPMixin):
         session_id: str,
         breakpoint_id: str,
         condition: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Set or modify a breakpoint condition
 
         Args:
@@ -994,8 +992,8 @@ class ArduinoDebug(MCPMixin):
         self,
         ctx: Context | None,
         session_id: str,
-        filename: Optional[str] = None
-    ) -> Dict[str, Any]:
+        filename: str | None = None
+    ) -> dict[str, Any]:
         """Save breakpoints to a file for later restoration
 
         Args:
@@ -1061,7 +1059,7 @@ class ArduinoDebug(MCPMixin):
         ctx: Context | None,
         session_id: str,
         filename: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Restore breakpoints from a saved file
 
         Args:
@@ -1091,7 +1089,7 @@ class ArduinoDebug(MCPMixin):
             metadata_file = Path(filename).with_suffix('.meta.json')
             if metadata_file.exists():
                 import json
-                with open(metadata_file, 'r') as f:
+                with open(metadata_file) as f:
                     metadata = json.load(f)
                     session['breakpoints'] = metadata.get('breakpoints', [])
 
@@ -1123,7 +1121,7 @@ class ArduinoDebug(MCPMixin):
         ctx: Context | None,
         session_id: str,
         expression: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Add a watch expression to monitor changes
 
         Args:
@@ -1179,7 +1177,7 @@ class ArduinoDebug(MCPMixin):
         address: str,
         count: int = 16,
         format: str = "hex"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Examine memory contents
 
         Args:
@@ -1238,7 +1236,7 @@ class ArduinoDebug(MCPMixin):
         self,
         ctx: Context | None,
         session_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Stop and cleanup debug session
 
         Args:
@@ -1293,7 +1291,7 @@ class ArduinoDebug(MCPMixin):
         self,
         ctx: Context | None,
         session_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Show current CPU register values
 
         Args:
@@ -1343,7 +1341,7 @@ class ArduinoDebug(MCPMixin):
                 return line.strip()
         return "unknown location"
 
-    async def _send_gdb_command(self, session: Dict, command: str) -> str:
+    async def _send_gdb_command(self, session: dict, command: str) -> str:
         """Send command to GDB process and return output"""
 
         process = session['process']

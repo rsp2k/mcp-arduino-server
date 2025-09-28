@@ -1,20 +1,18 @@
 """
 Tests for ArduinoDebug component
 """
-import json
 import asyncio
-from pathlib import Path
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-import subprocess
-import shutil
+import json
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from src.mcp_arduino_server.components.arduino_debug import ArduinoDebug, DebugCommand, BreakpointRequest
-from tests.conftest import (
-    assert_progress_reported,
-    assert_logged_info
+from src.mcp_arduino_server.components.arduino_debug import (
+    ArduinoDebug,
+    BreakpointRequest,
+    DebugCommand,
 )
+from tests.conftest import assert_logged_info, assert_progress_reported
 
 
 class TestArduinoDebug:

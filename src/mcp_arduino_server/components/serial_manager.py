@@ -4,18 +4,28 @@ Handles serial port connections, monitoring, and communication
 """
 
 import asyncio
-import threading
+import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
-from typing import AsyncIterator, Dict, List, Optional, Set, Callable, Any
-import logging
 
 import serial
 import serial.tools.list_ports
-import serial_asyncio
+
+try:
+    import serial_asyncio
+except ImportError:
+    # Fall back to serial.aio if serial_asyncio not available
+    try:
+        from serial import aio as serial_asyncio
+    except ImportError:
+        # Create a dummy module for testing without serial
+        class DummySerialAsyncio:
+            async def create_serial_connection(*args, **kwargs):
+                raise NotImplementedError("pyserial-asyncio not installed")
+        serial_asyncio = DummySerialAsyncio()
 
 logger = logging.getLogger(__name__)
 
@@ -35,13 +45,13 @@ class SerialPortInfo:
     device: str
     description: str
     hwid: str
-    vid: Optional[int] = None
-    pid: Optional[int] = None
-    serial_number: Optional[str] = None
-    location: Optional[str] = None
-    manufacturer: Optional[str] = None
-    product: Optional[str] = None
-    interface: Optional[str] = None
+    vid: int | None = None
+    pid: int | None = None
+    serial_number: str | None = None
+    location: str | None = None
+    manufacturer: str | None = None
+    product: str | None = None
+    interface: str | None = None
 
     @classmethod
     def from_list_ports_info(cls, info) -> "SerialPortInfo":
@@ -80,22 +90,22 @@ class SerialConnection:
     bytesize: int = 8
     parity: str = 'N'
     stopbits: float = 1
-    timeout: Optional[float] = None
+    timeout: float | None = None
     xonxoff: bool = False
     rtscts: bool = False
     dsrdtr: bool = False
     state: ConnectionState = ConnectionState.DISCONNECTED
-    reader: Optional[asyncio.StreamReader] = None
-    writer: Optional[asyncio.StreamWriter] = None
-    serial_obj: Optional[serial.Serial] = None
-    info: Optional[SerialPortInfo] = None
-    last_activity: Optional[datetime] = None
-    error_message: Optional[str] = None
-    listeners: Set[Callable] = field(default_factory=set)
-    buffer: List[str] = field(default_factory=list)
+    reader: asyncio.StreamReader | None = None
+    writer: asyncio.StreamWriter | None = None
+    serial_obj: serial.Serial | None = None
+    info: SerialPortInfo | None = None
+    last_activity: datetime | None = None
+    error_message: str | None = None
+    listeners: set[Callable] = field(default_factory=set)
+    buffer: list[str] = field(default_factory=list)
     max_buffer_size: int = 1000
 
-    async def readline(self) -> Optional[str]:
+    async def readline(self) -> str | None:
         """Read a line from the serial port"""
         if self.reader and self.state == ConnectionState.CONNECTED:
             try:
@@ -150,7 +160,7 @@ class SerialConnection:
         """Remove a listener"""
         self.listeners.discard(callback)
 
-    def get_buffer_content(self, last_n_lines: Optional[int] = None) -> List[str]:
+    def get_buffer_content(self, last_n_lines: int | None = None) -> list[str]:
         """Get buffered content"""
         if last_n_lines:
             return self.buffer[-last_n_lines:]
@@ -165,13 +175,13 @@ class SerialConnectionManager:
     """Manages multiple serial connections with auto-reconnection and monitoring"""
 
     def __init__(self):
-        self.connections: Dict[str, SerialConnection] = {}
-        self.monitoring_tasks: Dict[str, asyncio.Task] = {}
+        self.connections: dict[str, SerialConnection] = {}
+        self.monitoring_tasks: dict[str, asyncio.Task] = {}
         self.auto_reconnect: bool = True
         self.reconnect_delay: float = 2.0
         self._lock = asyncio.Lock()
         self._running = False
-        self._discovery_task: Optional[asyncio.Task] = None
+        self._discovery_task: asyncio.Task | None = None
 
     async def start(self):
         """Start the connection manager"""
@@ -198,14 +208,14 @@ class SerialConnectionManager:
 
         logger.info("Serial Connection Manager stopped")
 
-    async def list_ports(self) -> List[SerialPortInfo]:
+    async def list_ports(self) -> list[SerialPortInfo]:
         """List all available serial ports"""
         ports = []
         for port_info in serial.tools.list_ports.comports():
             ports.append(SerialPortInfo.from_list_ports_info(port_info))
         return ports
 
-    async def list_arduino_ports(self) -> List[SerialPortInfo]:
+    async def list_arduino_ports(self) -> list[SerialPortInfo]:
         """List serial ports that appear to be Arduino-compatible"""
         all_ports = await self.list_ports()
         return [p for p in all_ports if p.is_arduino_compatible()]
@@ -217,12 +227,12 @@ class SerialConnectionManager:
         bytesize: int = 8,  # 5, 6, 7, or 8
         parity: str = 'N',  # 'N', 'E', 'O', 'M', 'S'
         stopbits: float = 1,  # 1, 1.5, or 2
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         xonxoff: bool = False,  # Software flow control
         rtscts: bool = False,  # Hardware (RTS/CTS) flow control
         dsrdtr: bool = False,  # Hardware (DSR/DTR) flow control
-        inter_byte_timeout: Optional[float] = None,
-        write_timeout: Optional[float] = None,
+        inter_byte_timeout: float | None = None,
+        write_timeout: float | None = None,
         auto_monitor: bool = True,
         exclusive: bool = False
     ) -> SerialConnection:
@@ -442,18 +452,18 @@ class SerialConnectionManager:
 
             await asyncio.sleep(2.0)  # Check every 2 seconds
 
-    def get_connection(self, port: str) -> Optional[SerialConnection]:
+    def get_connection(self, port: str) -> SerialConnection | None:
         """Get a connection by port name"""
         return self.connections.get(port)
 
-    def get_connected_ports(self) -> List[str]:
+    def get_connected_ports(self) -> list[str]:
         """Get list of connected ports"""
         return [
             port for port, conn in self.connections.items()
             if conn.state == ConnectionState.CONNECTED
         ]
 
-    async def send_command(self, port: str, command: str, wait_for_response: bool = True, timeout: float = 5.0) -> Optional[str]:
+    async def send_command(self, port: str, command: str, wait_for_response: bool = True, timeout: float = 5.0) -> str | None:
         """
         Send a command to a port and optionally wait for response
 

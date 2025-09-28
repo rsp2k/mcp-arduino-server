@@ -1,7 +1,6 @@
 """Configuration module for MCP Arduino Server"""
-import os
 from pathlib import Path
-from typing import Optional, Set
+
 from pydantic import BaseModel, Field
 
 
@@ -57,7 +56,7 @@ class ArduinoServerConfig(BaseModel):
     )
 
     # Security settings
-    allowed_file_extensions: Set[str] = Field(
+    allowed_file_extensions: set[str] = Field(
         default={".ino", ".cpp", ".c", ".h", ".hpp", ".yaml", ".yml", ".txt", ".md"},
         description="Allowed file extensions for operations"
     )

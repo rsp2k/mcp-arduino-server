@@ -4,18 +4,16 @@ Provides cursor-based serial data access with context management
 """
 
 import asyncio
-import json
 import uuid
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Any
 from enum import Enum
 
 from fastmcp import Context
 from fastmcp.tools import Tool
 from pydantic import BaseModel, Field
 
-from .serial_manager import SerialConnectionManager, SerialConnection, ConnectionState
+from .serial_manager import SerialConnectionManager
 
 
 class SerialDataType(str, Enum):
@@ -47,9 +45,9 @@ class SerialDataBuffer:
 
     def __init__(self, max_size: int = 10000):
         self.max_size = max_size
-        self.buffer: List[SerialDataEntry] = []
+        self.buffer: list[SerialDataEntry] = []
         self.global_index = 0  # Ever-incrementing index
-        self.cursors: Dict[str, int] = {}  # cursor_id -> position
+        self.cursors: dict[str, int] = {}  # cursor_id -> position
 
     def add_entry(self, port: str, data: str, data_type: SerialDataType = SerialDataType.RECEIVED):
         """Add a new entry to the buffer"""
@@ -68,7 +66,7 @@ class SerialDataBuffer:
         if len(self.buffer) > self.max_size:
             self.buffer.pop(0)
 
-    def create_cursor(self, start_index: Optional[int] = None) -> str:
+    def create_cursor(self, start_index: int | None = None) -> str:
         """Create a new cursor for reading data"""
         cursor_id = str(uuid.uuid4())
 
@@ -87,9 +85,9 @@ class SerialDataBuffer:
         self,
         cursor_id: str,
         limit: int = 100,
-        port_filter: Optional[str] = None,
-        type_filter: Optional[SerialDataType] = None
-    ) -> tuple[List[SerialDataEntry], bool]:
+        port_filter: str | None = None,
+        type_filter: SerialDataType | None = None
+    ) -> tuple[list[SerialDataEntry], bool]:
         """
         Read entries from cursor position
 
@@ -133,14 +131,14 @@ class SerialDataBuffer:
         """Delete a cursor"""
         self.cursors.pop(cursor_id, None)
 
-    def get_latest(self, port: Optional[str] = None, limit: int = 10) -> List[SerialDataEntry]:
+    def get_latest(self, port: str | None = None, limit: int = 10) -> list[SerialDataEntry]:
         """Get latest entries without cursor"""
         entries = self.buffer[-limit:] if not port else [
             e for e in self.buffer if e.port == port
         ][-limit:]
         return entries
 
-    def clear(self, port: Optional[str] = None):
+    def clear(self, port: str | None = None):
         """Clear buffer for a specific port or all"""
         if port:
             self.buffer = [e for e in self.buffer if e.port != port]
@@ -154,7 +152,7 @@ class SerialMonitorContext:
     def __init__(self):
         self.connection_manager = SerialConnectionManager()
         self.data_buffer = SerialDataBuffer()
-        self.active_monitors: Dict[str, asyncio.Task] = {}
+        self.active_monitors: dict[str, asyncio.Task] = {}
         self._initialized = False
 
     async def initialize(self):
@@ -220,10 +218,10 @@ class SerialSendParams(BaseModel):
 
 class SerialReadParams(BaseModel):
     """Parameters for reading serial data"""
-    cursor_id: Optional[str] = Field(None, description="Cursor ID for pagination")
-    port: Optional[str] = Field(None, description="Filter by port")
+    cursor_id: str | None = Field(None, description="Cursor ID for pagination")
+    port: str | None = Field(None, description="Filter by port")
     limit: int = Field(100, description="Maximum entries to return")
-    type_filter: Optional[SerialDataType] = Field(None, description="Filter by data type")
+    type_filter: SerialDataType | None = Field(None, description="Filter by data type")
     create_cursor: bool = Field(False, description="Create new cursor if not provided")
 
 
@@ -234,7 +232,7 @@ class SerialListPortsParams(BaseModel):
 
 class SerialClearBufferParams(BaseModel):
     """Parameters for clearing serial buffer"""
-    port: Optional[str] = Field(None, description="Clear specific port or all if None")
+    port: str | None = Field(None, description="Clear specific port or all if None")
 
 
 class SerialResetBoardParams(BaseModel):

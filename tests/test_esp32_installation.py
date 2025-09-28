@@ -1,11 +1,12 @@
 """Test ESP32 core installation functionality"""
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from fastmcp import Context
 
-from mcp_arduino_server.config import ArduinoServerConfig
 from mcp_arduino_server.components.arduino_board import ArduinoBoard
+from mcp_arduino_server.config import ArduinoServerConfig
 
 
 @pytest.mark.asyncio

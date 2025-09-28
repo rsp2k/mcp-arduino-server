@@ -7,12 +7,13 @@ component testing with comprehensive mocking.
 """
 
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from fastmcp import Context
 
-from src.mcp_arduino_server.config import ArduinoServerConfig
 from src.mcp_arduino_server.components.arduino_board import ArduinoBoard
+from src.mcp_arduino_server.config import ArduinoServerConfig
 
 
 class TestESP32InstallationUnit:

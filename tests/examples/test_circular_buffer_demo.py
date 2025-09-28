@@ -16,6 +16,7 @@ sys.path.insert(0, '/home/rpm/claude/mcp-arduino-server/src')
 
 from mcp_arduino_server.components.circular_buffer import CircularSerialBuffer, SerialDataType
 
+
 async def demo():
     """Demonstrate circular buffer behavior"""
 
@@ -39,7 +40,7 @@ async def demo():
 
     # Create cursor at oldest data
     cursor1 = buffer.create_cursor(start_from="oldest")
-    print(f"\n✓ Created cursor1 at oldest data")
+    print("\n✓ Created cursor1 at oldest data")
 
     # Read first 5 entries
     result = buffer.read_from_cursor(cursor1, limit=5)
@@ -65,7 +66,7 @@ async def demo():
 
     # Check cursor status
     cursor_info = buffer.get_cursor_info(cursor1)
-    print(f"\n🔍 Cursor1 status after wraparound:")
+    print("\n🔍 Cursor1 status after wraparound:")
     print(f"  Valid: {cursor_info['is_valid']}")
     print(f"  Position: {cursor_info['position']}")
 
@@ -81,7 +82,7 @@ async def demo():
 
     # Create new cursor and demonstrate concurrent reading
     cursor2 = buffer.create_cursor(start_from="newest")
-    print(f"\n✓ Created cursor2 at newest data")
+    print("\n✓ Created cursor2 at newest data")
 
     print("\n📊 Final Statistics:")
     stats = buffer.get_statistics()
@@ -90,7 +91,7 @@ async def demo():
 
     # Cleanup
     buffer.cleanup_invalid_cursors()
-    print(f"\n🧹 Cleaned up invalid cursors")
+    print("\n🧹 Cleaned up invalid cursors")
 
 if __name__ == "__main__":
     asyncio.run(demo())

@@ -3,10 +3,10 @@ import asyncio
 import json
 import logging
 import subprocess
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 from fastmcp import Context
-from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_tool, mcp_resource
+from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_resource, mcp_tool
 from mcp.types import ToolAnnotations
 
 log = logging.getLogger(__name__)
@@ -123,7 +123,7 @@ Common troubleshooting steps:
         self,
         ctx: Context | None,
         query: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Search for Arduino board definitions"""
 
         try:
@@ -200,7 +200,7 @@ Common troubleshooting steps:
         self,
         ctx: Context | None,
         core_spec: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Install an Arduino board core/platform
 
         Args:
@@ -328,7 +328,7 @@ Common troubleshooting steps:
     async def list_cores(
         self,
         ctx: Context | None = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List all installed Arduino board cores"""
 
         try:
@@ -405,7 +405,7 @@ Common troubleshooting steps:
     async def install_esp32(
         self,
         ctx: Context | None = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Install ESP32 board support with automatic board package URL configuration"""
 
         try:
@@ -600,7 +600,7 @@ Common troubleshooting steps:
     async def update_cores(
         self,
         ctx: Context | None = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Update all installed Arduino cores"""
 
         try:

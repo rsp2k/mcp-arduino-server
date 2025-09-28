@@ -3,12 +3,14 @@
 Development server with hot-reloading for MCP Arduino Server
 """
 import os
+import subprocess
 import sys
 import time
-import subprocess
 from pathlib import Path
-from watchdog.observers import Observer
+
 from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
+
 
 class ReloadHandler(FileSystemEventHandler):
     def __init__(self):

@@ -1,20 +1,13 @@
 """
 Tests for WireViz component
 """
-import base64
 import os
-from pathlib import Path
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
 import subprocess
-import datetime
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
 from src.mcp_arduino_server.components.wireviz import WireViz, WireVizRequest
-from tests.conftest import (
-    assert_progress_reported,
-    assert_logged_info
-)
 
 
 class TestWireViz:

@@ -3,10 +3,10 @@ import logging
 import os
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 from fastmcp import Context
-from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_tool, mcp_resource
+from fastmcp.contrib.mcp_mixin import MCPMixin, mcp_resource, mcp_tool
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field, field_validator
 
@@ -56,7 +56,7 @@ class ArduinoSketch(MCPMixin):
         self,
         ctx: Context | None,
         sketch_name: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a new Arduino sketch directory and .ino file with boilerplate code"""
 
         try:
@@ -174,7 +174,7 @@ void loop() {{
         ctx: Context | None,
         sketch_name: str,
         board_fqbn: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Compile an Arduino sketch to verify code correctness"""
 
         try:
@@ -245,7 +245,7 @@ void loop() {{
         sketch_name: str,
         port: str,
         board_fqbn: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Compile and upload sketch to Arduino board"""
 
         try:
@@ -313,8 +313,8 @@ void loop() {{
         self,
         ctx: Context | None,
         sketch_name: str,
-        file_name: Optional[str] = None
-    ) -> Dict[str, Any]:
+        file_name: str | None = None
+    ) -> dict[str, Any]:
         """Read the contents of a sketch file"""
 
         try:
@@ -364,9 +364,9 @@ void loop() {{
         ctx: Context | None,
         sketch_name: str,
         content: str,
-        file_name: Optional[str] = None,
+        file_name: str | None = None,
         auto_compile: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Write or update a sketch file"""
 
         try:
@@ -390,7 +390,7 @@ void loop() {{
 
             result = {
                 "success": True,
-                "message": f"File written successfully",
+                "message": "File written successfully",
                 "path": str(file_path),
                 "size": len(content),
                 "lines": len(content.splitlines())

@@ -1,25 +1,22 @@
 """
 Pytest configuration and fixtures for mcp-arduino-server tests
 """
-import os
-import shutil
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastmcp import Context
-from fastmcp.utilities.tests import run_server_in_process
 
-from mcp_arduino_server.config import ArduinoServerConfig
 from mcp_arduino_server.components import (
-    ArduinoSketch,
-    ArduinoLibrary,
     ArduinoBoard,
     ArduinoDebug,
-    WireViz
+    ArduinoLibrary,
+    ArduinoSketch,
+    WireViz,
 )
+from mcp_arduino_server.config import ArduinoServerConfig
 
 
 @pytest.fixture
