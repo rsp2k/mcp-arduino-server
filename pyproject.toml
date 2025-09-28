@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcp-arduino"
-version = "2025.09.27.1"  # Date-based versioning as per your preference
+version = "2025.09.27.2"  # Date-based versioning as per your preference
 authors = [
   { name="Ryan Malloy", email="ryan@supported.systems" },
 ]
