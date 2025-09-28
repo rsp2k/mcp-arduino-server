@@ -25,7 +25,7 @@ This MCP server lets you develop Arduino projects through natural conversation w
 uvx mcp-arduino
 
 # Add to Claude Desktop
-claude mcp add arduino "uvx mcp-arduino"
+claude mcp add arduino uvx mcp-arduino
 ```
 
 That's it. Now you can talk to your Arduino.
